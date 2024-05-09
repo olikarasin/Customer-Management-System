@@ -1,0 +1,386 @@
+body {
+    font-family: "Helvetica";
+    background-color: #f4f4f4; /* #005a9c; /* #f4f4f4; */
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: white; /* #f4f4f4; /* #005a9c; */
+    color: #005a9c; /* white; */
+    text-align: center;
+    padding: 15px 0;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-container, .contact-and-add, .search-section, .files-display {
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+button {
+    background-color: #004a80;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #003366;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #005a9c;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: left;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 5px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    font-size: 0.8em;
+}
+
+.technician-level {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.technician-level label {
+    margin-right: 10px;
+}
+
+.tech-input-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tech-input-group div {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.tech-input-group input[type="number"] {
+    width: 60px; /* Smaller width for input */
+    margin-left: 5px;
+}
+
+/* Additional styles for delete button and filter title */
+.delete-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-title {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .technician-level {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tech-input-group {
+        flex-direction: column;
+    }
+
+    .tech-input-group div {
+        margin-bottom: 10px;
+    }
+}
+.timesheet-creation-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+}
+
+.timesheet-creation-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.timesheet-creation-container form label {
+    margin-top: 10px;
+}
+
+.timesheet-creation-container form input,
+.timesheet-creation-container form textarea {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.timesheet-creation-container form button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #005a9c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.timesheet-creation-container form button:hover {
+    background-color: #003366;
+}
+.timesheets-container {
+    max-width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+}
+
+.timesheet-filters {
+    margin-bottom: 20px;
+}
+
+.timesheet-filters label,
+.timesheet-filters input,
+.timesheet-filters button {
+    margin-right: 10px;
+}
+
+#timesheetsTable {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#timesheetsTable th,
+#timesheetsTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#timesheetsTable th {
+    background-color: #005a9c;
+    color: white;
+}
+
+#timesheetsTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.detail-box {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.detail-content {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    min-height: 20px; /* Adjust as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-item {
+    margin-bottom: 10px; /* Adjust as needed */
+}
+
+.info-item strong {
+    margin-right: 5px; /* Adjust as needed */
+}
+
+/* LOGIN PAGE UI */
+
+.login-container {
+    width: 400px; /* Increased width */
+    margin: 100px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-header {
+    background-color: #004a80; /* Blue background */
+    color: white; /* White text */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #004a80;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #003366;
+}
+
+/* MENU PAGE UI */
+
+.menu-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.menu-box {
+    width: 300px;
+    margin: 0 auto;
+    background-color: #004a80;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.menu-item {
+    background-color: #0066cc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 20px;
+    transition: background-color 0.3s;
+}
+
+.menu-item a {
+    text-decoration: none;
+    color: white;
+    font-size: 1.2em;
+}
+
+.menu-item:hover {
+    background-color: #0056b3;
+}
+
+.menu-item:last-child {
+    margin-bottom: 0; /* Removes margin from the last item */
+}
+
+/* Transporation charges, added */
+
+.transportation-charges {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.transportation-charges label,
+.transportation-charges input {
+    margin-right: 10px;
+}
+
+/* Specific styles for hours and minutes input */
+#transportHours,
+#transportMinutes {
+    width: 60px; /* Adjust the width as needed */
+}
+
+/* for the image */
+.top-right-logo {
+    position: absolute; /* or 'absolute' if within a positioned parent container */
+    top: 10px; /* adjust as needed for spacing from the top */
+    right: 20px; /* adjust as needed for spacing from the right */
+    width: 300px; /* adjust as needed */
+    height: auto; /* maintain aspect ratio */
+    z-index: 10; /* ensures the image stays on top of other elements */
+  }
+  
+  /* mini menu */
+  .mini-menu {
+    position: fixed; /* or absolute, depending on layout */
+    top: 0;
+    left: 0;
+    background-color: white; /* or any other color you prefer */
+    padding: 10px;
+    z-index: 100; /* Ensures it's above other items */
+    border-bottom-right-radius: 5px; /* Optional for styling */
+}
+
+.mini-menu a {
+    display: block; /* Stack links vertically */
+    margin-bottom: 5px; /* Space out links */
+    color: #005a9c; /* Your site's blue color for text */
+    text-decoration: none;
+    padding: 5px;
+}
+
+.mini-menu a:hover {
+    text-decoration: underline;
+    background-color: #f4f4f4; /* Light grey background on hover */
+}
