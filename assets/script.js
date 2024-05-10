@@ -135,3 +135,13 @@ function searchTimesheets() {
 function modifyTimesheet(timesheetId) {
     window.location.href = `update-timesheet.html?timesheetId=${timesheetId}`;
 }
+
+// FILE UPLOAD FOR TIMESHEET CREATION
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        console.log('Form submitted with:', new FormData(form));
+        // Uncomment the next line to see if the form has the file before submission
+        // event.preventDefault(); // Prevent the form from submitting
+    });
+});

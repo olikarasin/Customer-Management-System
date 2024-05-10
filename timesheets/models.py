@@ -1,79 +1,73 @@
 from django.db import models
 from customers.models import Customer
 from decimal import Decimal
-from datetime import time, datetime, timedelta
+from django.utils.timezone import make_aware
+from datetime import datetime, time
 
 class Timesheet(models.Model):
-    LEVEL_CHOICES = (
-        (1, 'Level 1'),
-        (2, 'Level 2'),
-        (3, 'Level 3'),
-    )
-
     customer = models.ForeignKey(Customer, related_name='timesheets', on_delete=models.CASCADE)
     timesheet_id = models.CharField(max_length=100, unique=True)
     date = models.DateField()
     time_in = models.TimeField()
     time_out = models.TimeField()
-    technician_level = models.IntegerField(choices=LEVEL_CHOICES)
-    rate = models.DecimalField(max_digits=10, decimal_places=2)
+    technician_level = models.IntegerField(choices=((1, 'Level 1'), (2, 'Level 2'), (3, 'Level 3')))
+    special_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # Optional special rate
     total_charge = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     file = models.FileField(upload_to='timesheets/')
     notes = models.TextField(blank=True, null=True)
 
-    def calculate_hours(self, start, end, rate):
-        """ Calculate hourly rates based on the given time range and rate """
-        total_hours = (end - start).seconds / 3600
-        return Decimal(total_hours) * rate
+    def calculate_hours(self, start, end):
+        """ Calculate hours between two datetime objects. """
+        total_seconds = (end - start).total_seconds()
+        return total_seconds / 3600
 
     def save(self, *args, **kwargs):
-        # Define time blocks
+        """ Override the save method to calculate charges based on the customer's technician rates. """
+        rate_dict = {
+            1: (self.customer.tech1_regular_hours, self.customer.tech1_time_and_a_half_hours, self.customer.tech1_double_time_hours),
+            2: (self.customer.tech2_regular_hours, self.customer.tech2_time_and_a_half_hours, self.customer.tech2_double_time_hours),
+            3: (self.customer.tech3_regular_hours, self.customer.tech3_time_and_a_half_hours, self.customer.tech3_double_time_hours),
+        }
+        regular_rate, time_and_a_half_rate, double_time_rate = rate_dict[self.technician_level]
+
+        # Times for calculations
         day_start = time(8, 0)  # 8 AM
         evening_start = time(17, 0)  # 5 PM
-        night_start = time(0, 0)  # Midnight
-        night_end = time(8, 0)  # 8 AM
+        night_end = time(8, 0)  # Next day 8 AM
 
-        # Initialize total_charge
-        self.total_charge = Decimal(0)
+        # Convert time_in and time_out to datetime objects
+        datetime_in = make_aware(datetime.combine(self.date, self.time_in))
+        datetime_out = make_aware(datetime.combine(self.date, self.time_out))
 
-        # Calculate the total charge based on technician rates and time blocks
-        rates = {
-            'regular': Decimal(self.rate),
-            'time_and_a_half': Decimal(self.rate) * Decimal(1.5),
-            'double_time': Decimal(self.rate) * Decimal(2)
-        }
+        total_charge = Decimal(0)
 
-        # Convert times to datetime objects for comparison
-        datetime_in = datetime.combine(self.date, self.time_in)
-        datetime_out = datetime.combine(self.date, self.time_out)
-
-        # Handle wrapping around midnight
-        if datetime_in > datetime_out:
-            datetime_out += timedelta(days=1)
-
-        # Process each segment
+        # Calculate charges for regular, time and a half, and double time
         current_time = datetime_in
         while current_time < datetime_out:
-            next_time = None
-            rate_key = 'regular'
+            next_time_boundary = None
+            current_rate = None
 
-            if day_start <= current_time.time() < evening_start:
-                next_time = datetime.combine(current_time.date(), evening_start)
-                rate_key = 'regular'
-            elif evening_start <= current_time.time() < night_start:
-                next_time = datetime.combine(current_time.date(), night_start)
-                rate_key = 'time_and_a_half'
-            else:  # Night time
-                next_boundary = datetime.combine(current_time.date() + timedelta(days=1), day_start)
-                next_time = min(next_boundary, datetime_out)
-                rate_key = 'double_time'
+            if current_time.time() < day_start:
+                # Current time is in double time (night time)
+                next_time_boundary = make_aware(datetime.combine(self.date, day_start))
+                current_rate = double_time_rate
+            elif current_time.time() < evening_start:
+                # Current time is in regular time
+                next_time_boundary = make_aware(datetime.combine(self.date, evening_start))
+                current_rate = regular_rate
+            else:
+                # Current time is in time and a half (evening time)
+                next_time_boundary = make_aware(datetime.combine(self.date + timedelta(days=1), night_end))
+                current_rate = time_and_a_half_rate
 
-            if next_time > datetime_out:
-                next_time = datetime_out
+            if datetime_out < next_time_boundary:
+                next_time_boundary = datetime_out
 
-            self.total_charge += self.calculate_hours(current_time, next_time, rates[rate_key])
-            current_time = next_time
+            hours = self.calculate_hours(current_time, next_time_boundary)
+            total_charge += Decimal(hours) * current_rate
+            current_time = next_time_boundary
 
+        self.total_charge = total_charge
         super(Timesheet, self).save(*args, **kwargs)
 
     def __str__(self):

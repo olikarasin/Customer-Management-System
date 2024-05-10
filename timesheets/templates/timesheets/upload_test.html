@@ -1,0 +1,10 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+<h2>Upload Test</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="testfile">
+    <button type="submit">Upload Test File</button>
+</form>
+{% endblock %}
