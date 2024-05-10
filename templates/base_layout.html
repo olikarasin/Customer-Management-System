@@ -1,4 +1,4 @@
-{% load static from static %}
+{% load static %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -6,7 +6,7 @@
         <title>Ace Technology Inc.</title>
         <link rel="stylesheet" href="{% static 'styles.css' %}">
     </head>
-    <body>
+    <body style="padding-bottom: 50px;"> <!-- Add padding at the bottom equivalent to footer height -->
         <header class="wrapper">
             <h1><a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a></h1>
             <nav>
@@ -18,7 +18,7 @@
                             <button type="submit">Logout</button>
                         </form>
                     </li>
-                    <li><a href="{% url 'customers:create' %}" class="highlight">New Article</a></li>
+                    <li><a href="{% url 'customers:create' %}" class="highlight">Create Account</a></li>
                     {% else %}
                     <li><a href="{% url 'accounts:login' %}">Login</a></li>
                     <li><a href="{% url 'accounts:signup' %}">Signup</a></li>
@@ -30,8 +30,8 @@
             {% block content %}
             {% endblock %}
         </div>
-        <footer>
-            <p>&copy; 2024 Ace Technology</p>
+        <footer style="position: relative; text-align: center; margin-top: 20px; clear: both; height: 40px; line-height: 40px;">
+            <p>&copy; 2024 Ace Technology Inc.</p>
         </footer>
     </body>
 </html>

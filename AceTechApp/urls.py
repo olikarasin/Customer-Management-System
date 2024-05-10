@@ -7,11 +7,11 @@ from django.conf import settings
 from customers import views as customer_views
 
 urlpatterns = [
+    path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('customers/', include('customers.urls')),
     # path('about/', views.about),
     path('', customer_views.customer_list, name="home"),
-    path('accounts/', include('accounts.urls')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

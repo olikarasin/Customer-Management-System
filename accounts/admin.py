@@ -11,5 +11,6 @@ class UserProfileInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
 
+# Unregister the original User admin to replace it with the enhanced one
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)

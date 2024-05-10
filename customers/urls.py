@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import customer_list, customer_create
-from .views import admin_dashboard, customer_dashboard
+from . import views
 
 app_name = 'customers'
 
 urlpatterns = [
-    path('list/', customer_list, name='list'),
-    path('create/', customer_create, name='create'),
-    path('admin/dashboard/', admin_dashboard, name='admindash'),
-    path('', customer_dashboard, name='dashboard'),
+    path('', views.customer_list, name='list'),
+    path('create/', views.customer_create, name='create'),
+    path('<int:pk>/edit/', views.customer_edit, name='edit'),
+    path('<int:pk>/delete/', views.customer_delete, name='delete'),
+    #path('<slug:slug>/', views.article_detail, name="detail") DO SUM LIKE THIS FOR CUSOTMER INFO
+    # path('admin/dashboard/', admin_dashboard, name='admindash'),
+    # path('', customer_dashboard, name='dashboard'),
 ]
