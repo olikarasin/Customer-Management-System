@@ -1,0 +1,28 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+<h2>List of Timesheets</h2>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Total Charge</th>
+        <th>Actions</th>
+    </tr>
+    {% for timesheet in timesheets %}
+    <tr>
+        <td>{{ timesheet.timesheet_id }}</td>
+        <td>{{ timesheet.date }}</td>
+        <td>{{ timesheet.time_in }}</td>
+        <td>{{ timesheet.time_out }}</td>
+        <td>{{ timesheet.total_charge }}</td>
+        <td>
+            <a href="{% url 'timesheets:edit_timesheet' timesheet.id %}">Edit</a>
+            <a href="{% url 'timesheets:delete_timesheet' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

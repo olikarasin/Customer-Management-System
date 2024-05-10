@@ -1,28 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap');
 
 body {
-    background-color: #f4f4f4; /* Light gray background */
-    color: #333; /* Dark gray text color for better readability */
-    font-family: "Helvetica", "Arial", sans-serif; /* Primary font is Helvetica */
+    background-color: #f4f4f4;
+    color: #333;
+    font-family: "Helvetica", "Arial", sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures the minimum height of the entire body is at least the height of the viewport */
+    margin: 0;
 }
 
 header {
     background-color: white;
-    color: #005a9c; /* Blue color for text in header */
+    color: #005a9c;
     padding: 15px 0;
     text-align: center;
 }
 
 .wrapper {
     max-width: 960px;
-    margin: 0 auto;
-    padding: 20px; /* Padding for internal spacing */
+    margin: auto;
+    padding: 20px;
+    flex: 1; /* Allows this wrapper to expand to fill available space, pushing the footer down */
 }
 
 h1, h2, h3, h4, h5 {
     font-weight: normal;
-    margin: 0;
-    color: #005a9c; /* Blue color for headings */
+    margin: 0 0 20px 0;
+    color: #005a9c;
 }
 
 a, a:hover, a:visited {
@@ -34,7 +39,7 @@ nav ul {
     list-style-type: none;
     padding: 0;
     display: flex;
-    justify-content: center; /* Center the navigation links */
+    justify-content: center;
 }
 
 nav li {
@@ -42,47 +47,56 @@ nav li {
 }
 
 button, input[type="submit"] {
-    background-color: #004a80; /* Blue background for buttons */
-    color: white; /* White text for buttons */
+    background-color: #004a80;
+    color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
 }
 
 button:hover, input[type="submit"]:hover {
-    background-color: #003366; /* Darker blue on hover */
+    background-color: #003366;
 }
 
 .container, .form-container, .search-section, .files-display {
-    background-color: white; /* White backgrounds for content areas */
-    color: #333; /* Dark text for content */
+    background-color: white;
+    color: #333;
     padding: 15px;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
-    border: 1px solid #ddd; /* Light border for inputs */
-    border-radius: 4px; /* Rounded borders for inputs */
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse; /* Ensures borders between cells are merged */
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 th, td {
     border: 1px solid #ddd;
     padding: 10px;
+    text-align: left;
 }
 
 th {
-    background-color: #005a9c; /* Blue background for table headers */
-    color: white; /* White text for table headers */
+    background-color: #005a9c;
+    color: white;
+}
+
+tr:nth-child(odd) {
+    background-color: #f9f9f9;
 }
 
 footer {
@@ -90,7 +104,25 @@ footer {
     color: white;
     text-align: center;
     padding: 10px;
-    position: fixed;
-    bottom: 0;
     width: 100%;
+}
+
+/* Ensuring the footer is always at the bottom */
+footer {
+    margin-top: auto; /* This pushes the footer to the bottom of the flex container (body) */
+}
+
+/* Enhancements for responsiveness and layout */
+@media (max-width: 768px) {
+    .wrapper, .container, .form-container, .search-section, .files-display {
+        padding: 10px;
+    }
+
+    nav ul {
+        flex-direction: column;
+    }
+
+    nav li {
+        margin-bottom: 10px;
+    }
 }

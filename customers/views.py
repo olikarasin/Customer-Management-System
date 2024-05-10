@@ -5,16 +5,16 @@ from .forms import CustomerForm
 
 @login_required(login_url="/accounts/login/")
 def customer_list(request):
-    form = CustomerForm()
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('customers:list')
+            return redirect('customers:list')  # Redirect to avoid re-posting
+    else:
+        form = CustomerForm()
 
     query = request.GET.get('q', '')
     customers = Customer.objects.filter(name__icontains=query) if query else Customer.objects.all()
-
     return render(request, 'customers/customer_list.html', {
         'form': form,
         'customers': customers

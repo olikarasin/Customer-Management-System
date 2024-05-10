@@ -22,9 +22,8 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Contact</th>
-            <th>Email</th>
-            <th>Phone</th>
+            <th>References</th>
+            <th>Rates</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -32,15 +31,28 @@
         {% for customer in customers %}
         <tr>
             <td>{{ customer.name }}</td>
-            <td>{{ customer.contact_name }}</td>
-            <td>{{ customer.email }}</td>
-            <td>{{ customer.phone }}</td>
+            <td>
+                Address: {{ customer.address }}<br>
+                Contact: {{ customer.contact_name }}<br>
+                Email: {{ customer.email }}<br>
+                Phone: {{ customer.phone }}
+            </td>
+            <td>
+                Transportation: {{ customer.transport_hours }}h:{{ customer.transport_minutes }}min<br>
+                Hide Charges: {{ customer.hide_transport_charges|yesno:"Yes,No" }}<br>
+                Contract: {{ customer.has_contract|yesno:"Yes,No" }}<br>
+                R1: {{ customer.tech1_regular_hours }} | TH1: {{ customer.tech1_time_and_a_half_hours }} | DT1: {{ customer.tech1_double_time_hours }}<br>
+                R2: {{ customer.tech2_regular_hours }} | TH2: {{ customer.tech2_time_and_a_half_hours }} | DT2: {{ customer.tech2_double_time_hours }}<br>
+                R3: {{ customer.tech3_regular_hours }} | TH3: {{ customer.tech3_time_and_a_half_hours }} | DT3: {{ customer.tech3_double_time_hours }}
+            </td>
             <td>
                 <a href="{% url 'customers:edit' customer.id %}">Edit</a> |
                 <form action="{% url 'customers:delete' customer.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" onclick="return confirm('Are you sure you want to delete this customer?');">Delete</button>
-                </form>
+                </form> |
+                <a href="{% url 'timesheets:list' customer.id %}">View Timesheets</a>
+                <a href="{% url 'timesheets:create' customer.id %}">Create Timesheet</a>
             </td>
         </tr>
         {% endfor %}

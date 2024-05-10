@@ -12,6 +12,7 @@ urlpatterns = [
     path('customers/', include('customers.urls')),
     # path('about/', views.about),
     path('', customer_views.customer_list, name="home"),
+    path('timesheets/', include('timesheets.urls', namespace='timesheets')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -1,37 +1,31 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Ace Technology Inc.</title>
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-    </head>
-    <body style="padding-bottom: 50px;"> <!-- Add padding at the bottom equivalent to footer height -->
-        <header class="wrapper">
-            <h1><a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a></h1>
-            <nav>
-                <ul>
-                    {% if user.is_authenticated %}
-                    <li>
-                        <form class="logout-link" action="{% url 'accounts:logout' %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </li>
-                    <li><a href="{% url 'customers:create' %}" class="highlight">Create Account</a></li>
-                    {% else %}
-                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
-                    <li><a href="{% url 'accounts:signup' %}">Signup</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </header>
-        <div class="wrapper">
-            {% block content %}
-            {% endblock %}
+<head>
+    <meta charset="utf-8">
+    <title>Ace Technology Inc.</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <div class="top-left-logo">
+            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a>
         </div>
-        <footer style="position: relative; text-align: center; margin-top: 20px; clear: both; height: 40px; line-height: 40px;">
-            <p>&copy; 2024 Ace Technology Inc.</p>
-        </footer>
-    </body>
+        {% if user.is_authenticated %}
+        <div class="logout-button">
+            <form action="{% url 'accounts:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+        {% endif %}
+    </header>
+    <div class="wrapper">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <footer>
+        <p>&copy; 2024 Ace Technology Inc.</p>
+    </footer>
+</body>
 </html>
