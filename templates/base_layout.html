@@ -11,14 +11,23 @@
         <div class="top-left-logo">
             <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a>
         </div>
-        {% if user.is_authenticated %}
-        <div class="logout-button">
-            <form action="{% url 'accounts:logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        </div>
-        {% endif %}
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
+                <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
+                <li>
+                    <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button class="button" type="submit">Logout</button>
+                    </form>
+                </li>
+                {% else %}
+                <li><a class="button" href="{% url 'accounts:login' %}">Login</a></li>
+                <li><a class="button" href="{% url 'accounts:signup' %}">Signup</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </header>
     <div class="wrapper">
         {% block content %}

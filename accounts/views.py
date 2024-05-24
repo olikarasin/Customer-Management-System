@@ -20,7 +20,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('customers:list')  # Redirect to the customer list
+            return redirect('customers:list')  # Redirect to the customer list view
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})

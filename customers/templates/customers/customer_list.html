@@ -3,14 +3,6 @@
 {% block content %}
 <h2>Manage Customers</h2>
 
-<!-- Customer Creation Form at the Top -->
-<h3>Add New Customer</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Add Customer</button>
-</form>
-
 <!-- Search Form -->
 <form method="get" style="margin-top: 20px;">
     <input type="text" name="q" placeholder="Search customers..." value="{{ request.GET.q }}">

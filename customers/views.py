@@ -25,8 +25,8 @@ def customer_create(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('customers:list')
+            customer = form.save()
+            return redirect('customers:dashboard', pk=customer.pk)
     else:
         form = CustomerForm()
     return render(request, 'customers/customer_create.html', {'form': form})
@@ -57,4 +57,5 @@ def admin_dashboard(request):
 
 @login_required
 def customer_dashboard(request):
-    return render(request, 'customers/customer_dashboard.html')
+    customers = Customer.objects.all()
+    return render(request, 'customers/customer_dashboard.html', {'customers': customers})
