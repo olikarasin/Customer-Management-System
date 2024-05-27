@@ -1,3 +1,4 @@
+<!-- timesheets/templates/timesheets/timesheet_list.html -->
 {% extends 'base_layout.html' %}
 
 {% block content %}
@@ -19,8 +20,8 @@
         <td>{{ timesheet.time_out }}</td>
         <td>{{ timesheet.total_charge }}</td>
         <td>
-            <a href="{% url 'timesheets:edit_timesheet' timesheet.id %}">Edit</a>
-            <a href="{% url 'timesheets:delete_timesheet' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
+            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a>
+            <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
         </td>
     </tr>
     {% endfor %}

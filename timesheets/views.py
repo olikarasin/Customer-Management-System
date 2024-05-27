@@ -1,11 +1,14 @@
+# timesheets/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Timesheet
+from .models import Timesheet, calculate_total_charge
 from .forms import TimesheetForm
 from django.contrib.auth.decorators import login_required
 from customers.models import Customer
-# For testing
 from django.http import HttpResponse
-
+from decimal import Decimal
+from django.utils.timezone import make_aware
+from datetime import datetime, timedelta
+import uuid
 
 @login_required
 def timesheet_create(request, customer_id):
@@ -15,9 +18,23 @@ def timesheet_create(request, customer_id):
         if form.is_valid():
             timesheet = form.save(commit=False)
             timesheet.customer = customer
-            # Make sure rate is set before saving, example default handling:
-            if not timesheet.rate:
-                timesheet.rate = Decimal("0.00")  # Default rate if not provided
+            timesheet.timesheet_id = uuid.uuid4()  # Ensure unique timesheet_id
+            
+            # Define the technician rates based on the level
+            rate_dict = {
+                1: (customer.tech1_regular_hours, customer.tech1_time_and_a_half_hours, customer.tech1_double_time_hours),
+                2: (customer.tech2_regular_hours, customer.tech2_time_and_a_half_hours, customer.tech2_double_time_hours),
+                3: (customer.tech3_regular_hours, customer.tech3_time_and_a_half_hours, customer.tech3_double_time_hours),
+            }
+            regular_rate, time_and_a_half_rate, double_time_rate = rate_dict[timesheet.technician_level]
+
+            # Calculate the total charge
+            if timesheet.special_rate:
+                total_charge = timesheet.special_rate
+            else:
+                total_charge = calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate)
+            
+            timesheet.total_charge = total_charge
             timesheet.save()
             return redirect('timesheets:list', customer_id=customer.id)
     else:
