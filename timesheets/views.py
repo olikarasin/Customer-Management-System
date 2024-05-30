@@ -32,9 +32,10 @@ def timesheet_create(request, customer_id):
             if timesheet.special_rate:
                 total_charge = timesheet.special_rate
             else:
-                total_charge = calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate)
+                total_charge, total_time_used = calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate)
             
             timesheet.total_charge = total_charge
+            timesheet.total_time_used = total_time_used
             timesheet.save()
             return redirect('timesheets:list', customer_id=customer.id)
     else:
@@ -45,7 +46,16 @@ def timesheet_create(request, customer_id):
 def timesheets_list(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     timesheets = Timesheet.objects.filter(customer=customer)
-    return render(request, 'timesheets/timesheets_list.html', {'timesheets': timesheets, 'customer': customer})
+
+    # Calculate hours remaining
+    total_time_used = sum(timesheet.total_time_used for timesheet in timesheets if timesheet.total_time_used)
+    hours_remaining = customer.hours_remaining - total_time_used
+
+    return render(request, 'timesheets/timesheets_list.html', {
+        'timesheets': timesheets,
+        'customer': customer,
+        'hours_remaining': hours_remaining,
+    })
 
 @login_required
 def timesheet_edit(request, pk):
@@ -54,7 +64,7 @@ def timesheet_edit(request, pk):
         form = TimesheetForm(request.POST, request.FILES, instance=timesheet)
         if form.is_valid():
             form.save()
-            return redirect('timesheets:list', customer_id=timesheet.customer.id)  # Ensure redirection includes the customer ID
+            return redirect('timesheets:list', customer_id=timesheet.customer.id)
     else:
         form = TimesheetForm(instance=timesheet)
     return render(request, 'timesheets/timesheet_edit.html', {'form': form, 'timesheet': timesheet})
@@ -64,7 +74,7 @@ def timesheet_delete(request, pk):
     timesheet = get_object_or_404(Timesheet, pk=pk)
     if request.method == 'POST':
         timesheet.delete()
-        return redirect('timesheets:list', customer_id=timesheet.customer.id)  # Adjust the redirect to include the customer ID
+        return redirect('timesheets:list', customer_id=timesheet.customer.id)
     return render(request, 'timesheets/timesheet_confirm_delete.html', {'timesheet': timesheet})
 
 # Test file

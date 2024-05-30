@@ -1,25 +1,24 @@
 # timesheets/models.py
 from django.db import models
-from customers.models import Customer
+from customers.models import Customer, Technician
 from decimal import Decimal
 from django.utils.timezone import make_aware
 from datetime import datetime, time, timedelta
-import uuid
 
 class Timesheet(models.Model):
     customer = models.ForeignKey(Customer, related_name='timesheets', on_delete=models.CASCADE)
-    timesheet_id = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
+    timesheet_id = models.CharField(max_length=100, unique=True)
     date = models.DateField()
     time_in = models.TimeField()
     time_out = models.TimeField()
     technician_level = models.IntegerField(choices=((1, 'Level 1'), (2, 'Level 2'), (3, 'Level 3')))
-    special_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # Optional special rate
+    special_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_charge = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     file = models.FileField(upload_to='timesheets/')
     notes = models.TextField(blank=True, null=True)
+    technician = models.ForeignKey(Technician, on_delete=models.SET_NULL, null=True, default=None)  # Added default=None
 
     def save(self, *args, **kwargs):
-        """ Override the save method to calculate charges based on the customer's technician rates. """
         rate_dict = {
             1: (self.customer.tech1_regular_hours, self.customer.tech1_time_and_a_half_hours, self.customer.tech1_double_time_hours),
             2: (self.customer.tech2_regular_hours, self.customer.tech2_time_and_a_half_hours, self.customer.tech2_double_time_hours),
@@ -38,9 +37,9 @@ class Timesheet(models.Model):
         return f"Timesheet {self.timesheet_id} for {self.customer.name}"
 
 def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate):
-    day_start = time(8, 0)  # 8 AM
-    evening_start = time(17, 0)  # 5 PM
-    night_end = time(8, 0)  # Next day 8 AM
+    day_start = time(8, 0)
+    evening_start = time(17, 0)
+    night_end = time(8, 0)
 
     datetime_in = make_aware(datetime.combine(timesheet.date, timesheet.time_in))
     datetime_out = make_aware(datetime.combine(timesheet.date, timesheet.time_out))

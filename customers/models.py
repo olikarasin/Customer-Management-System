@@ -1,3 +1,4 @@
+# customers/models.py
 from django.db import models
 
 class Customer(models.Model):
@@ -11,8 +12,10 @@ class Customer(models.Model):
     transport_hours = models.IntegerField(default=0)
     transport_minutes = models.IntegerField(default=0)
     hide_transport_charges = models.BooleanField(default=False)
+    hours_remaining = models.IntegerField(default=0)  # New field for hours remaining
+    last_modified = models.DateTimeField(auto_now=True)  # To track last modified date
 
-    # Technician levels 
+    # Technician levels
     tech1_regular_hours = models.IntegerField(default=0)
     tech1_time_and_a_half_hours = models.IntegerField(default=0)
     tech1_double_time_hours = models.IntegerField(default=0)
@@ -22,6 +25,12 @@ class Customer(models.Model):
     tech3_regular_hours = models.IntegerField(default=0)
     tech3_time_and_a_half_hours = models.IntegerField(default=0)
     tech3_double_time_hours = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+    
+class Technician(models.Model):
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name

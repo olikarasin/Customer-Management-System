@@ -9,6 +9,9 @@
         <th>Date</th>
         <th>Time In</th>
         <th>Time Out</th>
+        <th>Technician Level</th>
+        <th>Technician</th>
+        <th>Total Time Used</th>
         <th>Total Charge</th>
         <th>Actions</th>
     </tr>
@@ -18,12 +21,25 @@
         <td>{{ timesheet.date }}</td>
         <td>{{ timesheet.time_in }}</td>
         <td>{{ timesheet.time_out }}</td>
+        <td>{{ timesheet.get_technician_level_display }}</td>
+        <td>{{ timesheet.technician.name }}</td>
+        <td>{{ timesheet.total_time_used }}</td>
         <td>{{ timesheet.total_charge }}</td>
         <td>
-            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a>
+            <a href="{{ timesheet.file.url }}" target="_blank">View</a> <!-- View button to view the file -->
+            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a> <!-- Edit button -->
             <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
         </td>
     </tr>
     {% endfor %}
 </table>
+
+<!-- Customer information at the top -->
+<div>
+    <h3>Customer Information</h3>
+    <p>Name: {{ customer.name }}</p>
+    <p>Hours Remaining: {{ customer.hours_remaining }}</p>
+    <p>Last Modified: {{ customer.last_modified }}</p>
+</div>
+
 {% endblock %}
