@@ -9,10 +9,10 @@
 <body>
     <header>
         <div class="top-left-logo">
-            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a>
+            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" class="logo"></a>
         </div>
         <nav>
-            <ul>
+            <ul class="nav-buttons">
                 {% if user.is_authenticated %}
                 <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
                 <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>

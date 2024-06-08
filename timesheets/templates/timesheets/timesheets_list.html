@@ -1,8 +1,33 @@
-<!-- timesheets/templates/timesheets/timesheet_list.html -->
 {% extends 'base_layout.html' %}
 
 {% block content %}
 <h2>List of Timesheets</h2>
+
+<!-- Customer Information -->
+<div>
+    <h3>Customer Information</h3>
+    <p>Name: {{ customer.name }}</p>
+    <p>Address: {{ customer.address }}</p>
+    <p>Contact: {{ customer.contact_name }}</p>
+    <p>Email: {{ customer.email }}</p>
+    <p>Phone: {{ customer.phone }}</p>
+    <p>Hours Remaining: {{ customer.hours_remaining }}</p>
+    <p>Status: {{ customer.status }}</p>
+</div>
+
+<!-- Date Filter Form -->
+<form method="get" style="margin-top: 20px; display: flex; align-items: center;">
+    <label for="start_date" style="margin-right: 10px;">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" value="{{ start_date }}" style="margin-right: 10px;">
+    <label for="end_date" style="margin-right: 10px;">End Date:</label>
+    <input type="date" id="end_date" name="end_date" value="{{ end_date }}" style="margin-right: 10px;">
+    <button type="submit" style="margin-right: 10px;">Filter</button>
+    <a href="{% url 'timesheets:list' customer.id %}" class="button">Reset</a>
+</form>
+
+<!-- Total Charge Display -->
+<h3>Total Charge: ${{ total_charge }}</h3>
+
 <table>
     <tr>
         <th>ID</th>
@@ -13,6 +38,7 @@
         <th>Technician</th>
         <th>Total Time Used</th>
         <th>Total Charge</th>
+        <th>Notes</th>
         <th>Actions</th>
     </tr>
     {% for timesheet in timesheets %}
@@ -24,22 +50,14 @@
         <td>{{ timesheet.get_technician_level_display }}</td>
         <td>{{ timesheet.technician.name }}</td>
         <td>{{ timesheet.total_time_used }}</td>
-        <td>{{ timesheet.total_charge }}</td>
+        <td>${{ timesheet.total_charge }}</td>
+        <td>{{ timesheet.notes }}</td>
         <td>
-            <a href="{{ timesheet.file.url }}" target="_blank">View</a> <!-- View button to view the file -->
-            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a> <!-- Edit button -->
+            <a href="{{ timesheet.file.url }}" target="_blank">View</a>
+            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a>
             <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
         </td>
     </tr>
     {% endfor %}
 </table>
-
-<!-- Customer information at the top -->
-<div>
-    <h3>Customer Information</h3>
-    <p>Name: {{ customer.name }}</p>
-    <p>Hours Remaining: {{ customer.hours_remaining }}</p>
-    <p>Last Modified: {{ customer.last_modified }}</p>
-</div>
-
 {% endblock %}
