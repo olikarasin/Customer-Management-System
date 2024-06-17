@@ -9,13 +9,14 @@
 <body>
     <header>
         <div class="top-left-logo">
-            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" class="logo"></a>
+            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a>
         </div>
         <nav>
-            <ul class="nav-buttons">
+            <ul>
                 {% if user.is_authenticated %}
                 <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
                 <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
+                <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>  <!-- Add this line -->
                 <li>
                     <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
                         {% csrf_token %}

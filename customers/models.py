@@ -1,18 +1,30 @@
 from django.db import models
 
+class Technician(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class EmailReference(models.Model):
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.email
+
 class Customer(models.Model):
     name = models.CharField(max_length=255)
     has_contract = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     contact_name = models.CharField(max_length=255, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     transport_hours = models.IntegerField(default=0)
     transport_minutes = models.IntegerField(default=0)
     hide_transport_charges = models.BooleanField(default=False)
-    hours_remaining = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)  # Field for hours remaining
+    hours_remaining = models.IntegerField(default=0)  # Field for hours remaining
     status = models.CharField(max_length=10, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Inactive')  # Field for status
+    emails = models.ManyToManyField(EmailReference, blank=True)
 
     # Technician levels
     tech1_regular_hours = models.IntegerField(default=0)
@@ -34,8 +46,18 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
-class Technician(models.Model):
-    name = models.CharField(max_length=255)
+class Contract(models.Model):
+    customer = models.ForeignKey(Customer, related_name='contracts', on_delete=models.CASCADE)
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    rate = models.DecimalField(max_digits=10, decimal_places=2)
+    hours = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Default value added
+    paid = models.BooleanField(default=False)
+    invoice_number = models.CharField(max_length=100)
+
+    def save(self, *args, **kwargs):
+        self.hours = self.amount / self.rate
+        super(Contract, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"Contract {self.invoice_number} for {self.customer.name}"

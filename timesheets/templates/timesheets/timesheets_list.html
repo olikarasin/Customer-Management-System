@@ -16,13 +16,13 @@
 </div>
 
 <!-- Date Filter Form -->
-<form method="get" style="margin-top: 20px; display: flex; align-items: center;">
-    <label for="start_date" style="margin-right: 10px;">Start Date:</label>
-    <input type="date" id="start_date" name="start_date" value="{{ start_date }}" style="margin-right: 10px;">
-    <label for="end_date" style="margin-right: 10px;">End Date:</label>
-    <input type="date" id="end_date" name="end_date" value="{{ end_date }}" style="margin-right: 10px;">
-    <button type="submit" style="margin-right: 10px;">Filter</button>
-    <a href="{% url 'timesheets:list' customer.id %}" class="button">Reset</a>
+<form method="get" style="margin-top: 20px;">
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+    <button type="submit" class="button">Filter</button>
+    <button type="reset" class="button" onclick="window.location.href='{% url 'timesheets:list' customer.id %}'">Reset</button>
 </form>
 
 <!-- Total Charge Display -->
@@ -30,6 +30,7 @@
 
 <table>
     <tr>
+        <th>Approve</th>
         <th>ID</th>
         <th>Date</th>
         <th>Time In</th>
@@ -43,6 +44,16 @@
     </tr>
     {% for timesheet in timesheets %}
     <tr>
+        <td>
+            {% if timesheet.approved %}
+                Approved
+            {% else %}
+                <form action="{% url 'timesheets:approve' timesheet.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="button" onclick="return confirm('Are you sure you want to approve this timesheet?');">Approve</button>
+                </form>
+            {% endif %}
+        </td>
         <td>{{ timesheet.timesheet_id }}</td>
         <td>{{ timesheet.date }}</td>
         <td>{{ timesheet.time_in }}</td>
@@ -53,7 +64,11 @@
         <td>${{ timesheet.total_charge }}</td>
         <td>{{ timesheet.notes }}</td>
         <td>
-            <a href="{{ timesheet.file.url }}" target="_blank">View</a>
+            {% if timesheet.file %}
+                <a href="{{ timesheet.file.url }}" target="_blank">View</a>
+            {% else %}
+                No file
+            {% endif %}
             <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a>
             <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
         </td>

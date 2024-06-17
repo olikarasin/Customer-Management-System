@@ -2,9 +2,26 @@
 
 {% block content %}
 <h2>Create Customer</h2>
-<form method="post">
+<form method="post" id="customer-form">
     {% csrf_token %}
     {{ form.as_p }}
+    <div id="email-container">
+        <label for="id_emails">Emails:</label>
+        <input type="email" name="emails" class="email-field">
+    </div>
+    <button type="button" onclick="addEmailField()">+ Add another email</button>
+    <br>
     <button type="submit">Submit</button>
 </form>
+
+<script>
+function addEmailField() {
+    var container = document.getElementById("email-container");
+    var input = document.createElement("input");
+    input.type = "email";
+    input.name = "emails";
+    input.className = "email-field";
+    container.appendChild(input);
+}
+</script>
 {% endblock %}

@@ -1,13 +1,13 @@
-# timesheets/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Timesheet, calculate_total_charge
 from .forms import TimesheetForm
 from django.contrib.auth.decorators import login_required
 from customers.models import Customer
 from django.http import HttpResponse
-from decimal import Decimal
+from decimal import Decimal, ROUND_UP
 from django.utils.timezone import make_aware
 from datetime import datetime, timedelta
+from django.contrib import messages
 
 @login_required
 def timesheet_create(request, customer_id):
@@ -17,8 +17,7 @@ def timesheet_create(request, customer_id):
         if form.is_valid():
             timesheet = form.save(commit=False)
             timesheet.customer = customer
-            
-            # Define the technician rates based on the level
+
             rate_dict = {
                 1: (customer.tech1_regular_hours, customer.tech1_time_and_a_half_hours, customer.tech1_double_time_hours),
                 2: (customer.tech2_regular_hours, customer.tech2_time_and_a_half_hours, customer.tech2_double_time_hours),
@@ -26,16 +25,22 @@ def timesheet_create(request, customer_id):
             }
             regular_rate, time_and_a_half_rate, double_time_rate = rate_dict[timesheet.technician_level]
 
-            # Calculate the total charge
+            # Convert time_in and time_out to datetime objects for the same date
+            datetime_in = make_aware(datetime.combine(timesheet.date, timesheet.time_in))
+            datetime_out = make_aware(datetime.combine(timesheet.date, timesheet.time_out))
+
             if timesheet.special_rate:
-                total_charge, total_time_used = timesheet.special_rate, (timesheet.time_out - timesheet.time_in).total_seconds() / 3600
+                # Calculate the total time used in hours
+                total_time_used = Decimal((datetime_out - datetime_in).total_seconds() / 3600)
+                # Round the total time used up to the nearest 15 minutes
+                rounded_minutes = (total_time_used * 60 + 14) // 15 * 15
+                rounded_hours = Decimal(rounded_minutes) / 60
+                total_charge = timesheet.special_rate * rounded_hours
             else:
                 total_charge, total_time_used = calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate)
             
             timesheet.total_charge = total_charge
             timesheet.total_time_used = total_time_used
-            customer.hours_remaining -= total_time_used
-            customer.save()
             timesheet.save()
             return redirect('timesheets:list', customer_id=customer.id)
     else:
@@ -70,8 +75,6 @@ def timesheet_delete(request, pk):
     timesheet = get_object_or_404(Timesheet, pk=pk)
     customer_id = timesheet.customer.id  # Get the customer ID before deleting the timesheet
     if request.method == 'POST':
-        timesheet.customer.hours_remaining += timesheet.total_time_used
-        timesheet.customer.save()
         timesheet.delete()
         return redirect('timesheets:list', customer_id=customer_id)  # Ensure redirection includes the customer ID
     return render(request, 'timesheets/timesheet_confirm_delete.html', {'timesheet': timesheet, 'customer_id': customer_id})
@@ -96,3 +99,12 @@ def upload_test(request):
                 destination.write(chunk)
         return HttpResponse("File uploaded successfully")
     return render(request, 'timesheets/upload_test.html')
+
+@login_required
+def approve_timesheet(request, pk):
+    timesheet = get_object_or_404(Timesheet, pk=pk)
+    if request.method == 'POST':
+        timesheet.approved = True
+        timesheet.save()
+        messages.success(request, 'Timesheet approved successfully.')
+    return redirect('timesheets:list', customer_id=timesheet.customer.id)
