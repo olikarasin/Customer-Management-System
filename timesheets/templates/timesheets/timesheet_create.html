@@ -1,10 +1,17 @@
 {% extends 'base_layout.html' %}
 
 {% block content %}
-<h2>Create Timesheet</h2>
+<h2>Create Timesheet for {{ customer.name }}</h2>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Create Timesheet</button>
+    <button type="submit" class="button">Save</button>
+    <a href="{% url 'timesheets:list' customer.id %}" class="button">Cancel</a>
 </form>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
 {% endblock %}

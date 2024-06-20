@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Technician(models.Model):
     name = models.CharField(max_length=255)
@@ -61,3 +62,17 @@ class Contract(models.Model):
 
     def __str__(self):
         return f"Contract {self.invoice_number} for {self.customer.name}"
+
+class Credential(models.Model):
+    customer = models.ForeignKey(Customer, related_name='credentials', on_delete=models.CASCADE)
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+    def __str__(self):
+        return f'{self.customer.name} - {self.username}'

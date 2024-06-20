@@ -1,5 +1,5 @@
 from django import forms
-from .models import Customer, EmailReference, Technician, Contract
+from .models import Customer, EmailReference, Technician, Contract, Credential
 
 class EmailReferenceForm(forms.ModelForm):
     class Meta:
@@ -22,3 +22,11 @@ class TechnicianForm(forms.ModelForm):
     class Meta:
         model = Technician
         fields = ['name']
+
+class CredentialForm(forms.ModelForm):
+    class Meta:
+        model = Credential
+        fields = ['username', 'password']
+        widgets = {
+            'password': forms.PasswordInput(),
+        }

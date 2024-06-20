@@ -18,6 +18,16 @@ def timesheet_create(request, customer_id):
             timesheet = form.save(commit=False)
             timesheet.customer = customer
 
+            # Check for duplicate Timesheet ID
+            duplicate_timesheet = Timesheet.objects.filter(timesheet_id=timesheet.timesheet_id).exists()
+            if duplicate_timesheet:
+                messages.warning(request, 'Timesheet ID already exists. Are you sure you want to create another instance of this timesheet?')
+            
+            # Check if no file uploaded
+            if not timesheet.file:
+                messages.warning(request, 'No file was uploaded. Are you sure you want to create the timesheet without a file?')
+
+            # Handle pause logic and calculate total charge
             rate_dict = {
                 1: (customer.tech1_regular_hours, customer.tech1_time_and_a_half_hours, customer.tech1_double_time_hours),
                 2: (customer.tech2_regular_hours, customer.tech2_time_and_a_half_hours, customer.tech2_double_time_hours),
@@ -29,15 +39,20 @@ def timesheet_create(request, customer_id):
             datetime_in = make_aware(datetime.combine(timesheet.date, timesheet.time_in))
             datetime_out = make_aware(datetime.combine(timesheet.date, timesheet.time_out))
 
+            # Calculate pause duration in hours
+            pause_hours, pause_minutes = map(int, timesheet.pause.split('h'))
+            pause_duration = Decimal(pause_hours + pause_minutes / 60)
+
             if timesheet.special_rate:
                 # Calculate the total time used in hours
-                total_time_used = Decimal((datetime_out - datetime_in).total_seconds() / 3600)
+                total_time_used = Decimal((datetime_out - datetime_in).total_seconds() / 3600) - pause_duration
                 # Round the total time used up to the nearest 15 minutes
                 rounded_minutes = (total_time_used * 60 + 14) // 15 * 15
                 rounded_hours = Decimal(rounded_minutes) / 60
                 total_charge = timesheet.special_rate * rounded_hours
             else:
                 total_charge, total_time_used = calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double_time_rate)
+                total_charge -= regular_rate * pause_duration  # Subtract pause duration charge
             
             timesheet.total_charge = total_charge
             timesheet.total_time_used = total_time_used

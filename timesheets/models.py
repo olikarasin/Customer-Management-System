@@ -1,3 +1,4 @@
+# timesheets/models.py
 from decimal import Decimal, ROUND_UP
 from django.utils.timezone import make_aware
 from datetime import datetime, time, timedelta
@@ -69,6 +70,12 @@ def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double
 
         current_time = next_time_boundary
 
+    # Subtract the pause duration
+    pause_hours, pause_minutes = map(int, timesheet.pause.split('h'))
+    pause_duration = Decimal(pause_hours + pause_minutes / 60)
+    total_charge -= regular_rate * pause_duration  # Subtract pause duration charge
+    total_time_used -= pause_duration
+
     return total_charge, total_time_used
 
 class Timesheet(models.Model):
@@ -82,7 +89,8 @@ class Timesheet(models.Model):
     special_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_charge = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_time_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    file = models.FileField(upload_to='timesheets/', blank=True, null=True)  # Modified to make the file field optional
+    pause = models.CharField(max_length=10, default='0h0')  # Add pause field
+    file = models.FileField(upload_to='timesheets/', blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     approved = models.BooleanField(default=False)  # New field to track approval
 
