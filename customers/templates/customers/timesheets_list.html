@@ -1,0 +1,42 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+<h2>Timesheets for {{ customer.name }}</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Technician</th>
+            <th>Technician Level</th>
+            <th>Special Rate</th>
+            <th>Pause</th>
+            <th>Total Charge</th>
+            <th>Total Time Used</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for timesheet in timesheets %}
+        <tr>
+            <td>{{ timesheet.id }}</td>
+            <td>{{ timesheet.date }}</td>
+            <td>{{ timesheet.time_in }}</td>
+            <td>{{ timesheet.time_out }}</td>
+            <td>{{ timesheet.technician.name }}</td>
+            <td>{{ timesheet.technician_level }}</td>
+            <td>{{ timesheet.special_rate }}</td>
+            <td>{{ timesheet.pause }}</td>
+            <td>{{ timesheet.total_charge }}</td>
+            <td>{{ timesheet.total_time_used }}</td>
+            <td>
+                <a href="{% url 'timesheets:edit' timesheet.id %}" class="btn btn-primary">Edit</a>
+                <a href="{% url 'timesheets:delete' timesheet.id %}" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

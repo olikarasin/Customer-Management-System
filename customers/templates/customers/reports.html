@@ -1,0 +1,32 @@
+<!-- customers/templates/customers/reports.html -->
+
+{% extends 'base_layout.html' %}
+
+{% block content %}
+<h2>Reports</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Time left</th>
+            <th>Non-paid renewal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td>{{ customer.name }}</td>
+            <td style="color: {% if customer.hours_remaining >= 50 %}green{% elif 0 < customer.hours_remaining < 50 %}yellow{% else %}red{% endif %};">
+                {{ customer.hours_remaining }} hours
+            </td>
+            <td>
+                <form method="post" action="{% url 'customers:update_renewal_status' customer.id %}">
+                    {% csrf_token %}
+                    <input type="checkbox" name="renewal_paid" {% if customer.renewal_paid %}checked{% endif %} onchange="this.form.submit()">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

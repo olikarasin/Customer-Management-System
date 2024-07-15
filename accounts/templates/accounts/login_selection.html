@@ -1,0 +1,29 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Selection</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <div class="top-left-logo">
+            <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+        </div>
+        <h1>Welcome to AceTech</h1>
+    </header>
+    <div class="login-container container">
+        <h2>Login</h2>
+        <div>
+            <a href="{% url 'accounts:admin_login' %}" class="button">Sign in as Admin</a>
+            <a href="{% url 'accounts:customer_login' %}" class="button">Sign in as Customer</a>
+        </div>
+    </div>
+    <footer>
+        &copy; 2024 AceTech
+    </footer>
+</body>
+</html>

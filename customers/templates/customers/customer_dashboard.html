@@ -1,28 +1,25 @@
 {% extends 'base_layout.html' %}
 
 {% block content %}
-<h2>Customer Dashboard</h2>
+<h2>Welcome, {{ user.username }}</h2>
+<h3>Your Timesheets</h3>
 <table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Details</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers %}
-        <tr>
-            <td>{{ customer.name }}</td>
-            <td>
-                <!-- List details like contact, email, etc. -->
-            </td>
-            <td>
-                <a href="{% url 'customers:edit' customer.id %}">Edit</a> |
-                <a href="{% url 'customers:delete' customer.id %}" onclick="return confirm('Are you sure?');">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
+    <tr>
+        <th>Timesheet ID</th>
+        <th>Date</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Total Charge</th>
+    </tr>
+    {% for timesheet in timesheets %}
+    <tr>
+        <td>{{ timesheet.timesheet_id }}</td>
+        <td>{{ timesheet.date }}</td>
+        <td>{{ timesheet.time_in }}</td>
+        <td>{{ timesheet.time_out }}</td>
+        <td>{{ timesheet.total_charge }}</td>
+    </tr>
+    {% endfor %}
 </table>
+<a href="{% url 'accounts:logout' %}">Logout</a>
 {% endblock %}

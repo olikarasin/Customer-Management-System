@@ -1,31 +1,34 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('customers:list')  # Redirect to the customer list
-    else:
-        form = UserCreationForm()
-    return render(request, 'accounts/signup.html', {'form': form})
+def main_login(request):
+    return render(request, 'accounts/main_login.html')
 
-def login_view(request):
+def admin_login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
             login(request, user)
             return redirect('customers:list')  # Redirect to the customer list view
-    else:
-        form = AuthenticationForm()
-    return render(request, 'accounts/login.html', {'form': form})
+        else:
+            messages.error(request, 'Invalid admin credentials')
+    return render(request, 'accounts/admin_login.html')
+
+def customer_login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and not user.is_staff:
+            login(request, user)
+            return redirect('customers:customer_dashboard')
+        else:
+            messages.error(request, 'Invalid customer credentials')
+    return render(request, 'accounts/customer_login.html')
 
 def logout_view(request):
-    if request.method == 'POST':
-        logout(request)
-        return redirect('home')
+    logout(request)
+    return redirect('accounts:main_login')

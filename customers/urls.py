@@ -1,3 +1,5 @@
+# customers/urls.py
+
 from django.urls import path
 from . import views
 
@@ -10,11 +12,18 @@ urlpatterns = [
     path('<int:pk>/delete/', views.customer_delete, name='delete'),
     path('<int:customer_id>/contracts/', views.contract_list, name='contract_list'),
     path('<int:customer_id>/contracts/create/', views.contract_create, name='contract_create'),
+    path('<int:customer_id>/contracts/<int:pk>/edit/', views.contract_edit, name='contract_edit'),
+    path('<int:customer_id>/contracts/<int:pk>/delete/', views.contract_delete, name='contract_delete'),
     path('technicians/', views.technician_list, name='technician_list'),
     path('technicians/create/', views.technician_create, name='technician_create'),
     path('technicians/<int:pk>/delete/', views.technician_delete, name='technician_delete'),
-    path('<int:customer_id>/credentials/', views.credential_list, name='credential_list'),  # New line
-    path('<int:customer_id>/credentials/create/', views.credential_create, name='credential_create'),  # New line
-    path('<int:customer_id>/credentials/<int:pk>/edit/', views.credential_edit, name='credential_edit'),  # New line
-    path('<int:customer_id>/credentials/<int:pk>/delete/', views.credential_delete, name='credential_delete'),  # New line
+    path('<int:customer_id>/credentials/', views.credential_list, name='credential_list'),
+    path('<int:customer_id>/credentials/create/', views.credential_create, name='credential_create'),
+    path('<int:customer_id>/credentials/<int:pk>/edit/', views.credential_edit, name='credential_edit'),
+    path('<int:customer_id>/credentials/<int:pk>/delete/', views.credential_delete, name='credential_delete'),
+    path('generate_password/', views.generate_password, name='generate_password'),
+    path('admin_dashboard/', views.customer_list, name='admin_dashboard'),  # Redirect to customer_list.html
+    path('customer_dashboard/', views.customer_dashboard, name='customer_dashboard'),
+    path('reports/', views.reports, name='reports'),
+    path('update_renewal_status/<int:customer_id>/', views.update_renewal_status, name='update_renewal_status'),
 ]

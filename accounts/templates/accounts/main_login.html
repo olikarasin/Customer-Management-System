@@ -1,0 +1,16 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <!-- Redirect to the customer list if the user is authenticated -->
+    <script>
+        window.location.href = "{% url 'customers:list' %}";
+    </script>
+{% else %}
+    <h2>Login</h2>
+    <div>
+        <a href="{% url 'accounts:admin_login' %}">Sign in as Admin</a>
+        <a href="{% url 'accounts:customer_login' %}">Sign in as Customer</a>
+    </div>
+{% endif %}
+{% endblock %}

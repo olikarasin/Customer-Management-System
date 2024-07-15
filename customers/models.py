@@ -1,5 +1,7 @@
+# customers/models.py
+
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import User
 
 class Technician(models.Model):
     name = models.CharField(max_length=255)
@@ -14,6 +16,7 @@ class EmailReference(models.Model):
         return self.email
 
 class Customer(models.Model):
+    user_profile = models.OneToOneField(User, on_delete=models.CASCADE, default=1)  # Replace 1 with the actual default user ID
     name = models.CharField(max_length=255)
     has_contract = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
@@ -23,11 +26,10 @@ class Customer(models.Model):
     transport_hours = models.IntegerField(default=0)
     transport_minutes = models.IntegerField(default=0)
     hide_transport_charges = models.BooleanField(default=False)
-    hours_remaining = models.IntegerField(default=0)  # Field for hours remaining
-    status = models.CharField(max_length=10, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Inactive')  # Field for status
+    hours_remaining = models.IntegerField(default=0)
+    status = models.CharField(max_length=10, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Inactive')
     emails = models.ManyToManyField(EmailReference, blank=True)
 
-    # Technician levels
     tech1_regular_hours = models.IntegerField(default=0)
     tech1_time_and_a_half_hours = models.IntegerField(default=0)
     tech1_double_time_hours = models.IntegerField(default=0)
@@ -38,8 +40,9 @@ class Customer(models.Model):
     tech3_time_and_a_half_hours = models.IntegerField(default=0)
     tech3_double_time_hours = models.IntegerField(default=0)
 
+    renewal_paid = models.BooleanField(default=False)  # Add this line
+
     def save(self, *args, **kwargs):
-        # Automatically set status to 'Inactive' if hours_remaining is 0
         if self.hours_remaining == 0:
             self.status = 'Inactive'
         super(Customer, self).save(*args, **kwargs)
@@ -52,7 +55,7 @@ class Contract(models.Model):
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
-    hours = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Default value added
+    hours = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     paid = models.BooleanField(default=False)
     invoice_number = models.CharField(max_length=100)
 
@@ -65,14 +68,8 @@ class Contract(models.Model):
 
 class Credential(models.Model):
     customer = models.ForeignKey(Customer, related_name='credentials', on_delete=models.CASCADE)
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
-
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.password)
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)  # Plaintext password
 
     def __str__(self):
-        return f'{self.customer.name} - {self.username}'
+        return self.username

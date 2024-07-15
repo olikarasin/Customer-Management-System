@@ -65,12 +65,12 @@
         <td>{{ timesheet.notes }}</td>
         <td>
             {% if timesheet.file %}
-                <a href="{{ timesheet.file.url }}" target="_blank">View</a>
+                <a href="{{ timesheet.file.url }}" target="_blank"><button>View</button></a>
             {% else %}
                 No file
             {% endif %}
-            <a href="{% url 'timesheets:edit' timesheet.id %}">Edit</a>
-            <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');">Delete</a>
+            <a href="{% url 'timesheets:edit' timesheet.id %}"><button>Edit</button></a>
+            <a href="{% url 'timesheets:delete' timesheet.id %}" onclick="return confirm('Are you sure?');"><button>Delete</button></a>
         </td>
     </tr>
     {% endfor %}

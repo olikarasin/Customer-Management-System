@@ -1,3 +1,5 @@
+<!-- templates/base_layout.html -->
+
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -16,7 +18,8 @@
                 {% if user.is_authenticated %}
                 <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
                 <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
-                <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>  <!-- Add this line -->
+                <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>
+                <li><a class="button" href="{% url 'customers:reports' %}">Reports</a></li>
                 <li>
                     <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
                         {% csrf_token %}
@@ -24,8 +27,8 @@
                     </form>
                 </li>
                 {% else %}
-                <li><a class="button" href="{% url 'accounts:login' %}">Login</a></li>
-                <li><a class="button" href="{% url 'accounts:signup' %}">Signup</a></li>
+                <li><a class="button" href="{% url 'accounts:admin_login' %}">Sign in as Admin</a></li>
+                <li><a class="button" href="{% url 'accounts:customer_login' %}">Sign in as Customer</a></li>
                 {% endif %}
             </ul>
         </nav>
