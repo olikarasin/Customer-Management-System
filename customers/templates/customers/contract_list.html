@@ -10,7 +10,7 @@
             <th>Rate</th>
             <th>Hours</th>
             <th>Paid</th>
-            <th>Invoice Number</th>
+            <th>Timesheet Number</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -26,6 +26,12 @@
             <td>
                 <a href="{% url 'customers:contract_edit' customer.id contract.id %}" class="btn btn-primary">Edit</a>
                 <a href="{% url 'customers:contract_delete' customer.id contract.id %}" class="btn btn-danger">Delete</a>
+                {% if not contract.approved %}
+                    <form method="post" action="{% url 'customers:contract_approve' customer.id contract.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Approve</button>
+                    </form>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

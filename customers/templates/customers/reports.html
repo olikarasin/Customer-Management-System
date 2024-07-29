@@ -1,32 +1,47 @@
-<!-- customers/templates/customers/reports.html -->
-
 {% extends 'base_layout.html' %}
 
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reports_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Reports</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Customer</th>
-            <th>Time left</th>
-            <th>Non-paid renewal</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers %}
-        <tr>
-            <td>{{ customer.name }}</td>
-            <td style="color: {% if customer.hours_remaining >= 50 %}green{% elif 0 < customer.hours_remaining < 50 %}yellow{% else %}red{% endif %};">
-                {{ customer.hours_remaining }} hours
-            </td>
-            <td>
-                <form method="post" action="{% url 'customers:update_renewal_status' customer.id %}">
-                    {% csrf_token %}
-                    <input type="checkbox" name="renewal_paid" {% if customer.renewal_paid %}checked{% endif %} onchange="this.form.submit()">
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div id="printable">
+    <h2>Reports</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Time left</th>
+                <th>Non-paid renewal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.name }}</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="background-color: 
+                            {% if customer.hours_remaining >= 50 %}green
+                            {% elif customer.hours_remaining > 0 and customer.hours_remaining < 50 %}yellow
+                            {% else %}red
+                            {% endif %};">
+                        </div>
+                        <span class="hours-text">{{ customer.hours_remaining }}</span>
+                    </div>
+                </td>
+                <td>
+                    <form method="post" action="{% url 'customers:update_renewal_status' customer.id %}">
+                        {% csrf_token %}
+                        <input type="checkbox" name="renewal_paid" {% if customer.renewal_paid %}checked{% endif %} onchange="this.form.submit()">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<button class="button print-button" onclick="window.print()">Print</button>
 {% endblock %}

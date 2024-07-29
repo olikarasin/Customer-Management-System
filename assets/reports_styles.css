@@ -1,0 +1,33 @@
+.progress-container {
+    display: flex;
+    align-items: center;
+}
+
+.progress-bar {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border-radius: 3px;
+}
+
+.hours-text {
+    white-space: nowrap; /* Prevents text from wrapping */
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printable, #printable * {
+        visibility: visible;
+    }
+    #printable {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .progress-bar {
+        -webkit-print-color-adjust: exact; /* Ensure the progress bar prints in color */
+        print-color-adjust: exact; /* Standard property for compatibility */
+    }
+}

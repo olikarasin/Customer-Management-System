@@ -1,10 +1,24 @@
 {% extends 'base_layout.html' %}
 
 {% block content %}
-<h2>Edit Timesheet</h2>
+<h2>Edit Timesheet for {{ timesheet.customer.name }}</h2>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Save Changes</button>
+    <button type="submit" class="button">Save Timesheet</button>
 </form>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var dateInput = document.getElementById('id_date');
+        dateInput.addEventListener('input', function() {
+            var value = dateInput.value.replace(/\D/g, '');
+            if (value.length >= 5) {
+                value = value.slice(0, 4) + '/' + value.slice(4, 6) + '/' + value.slice(6, 8);
+            } else if (value.length >= 3) {
+                value = value.slice(0, 4) + '/' + value.slice(4, 6);
+            }
+            dateInput.value = value;
+        });
+    });
+</script>
 {% endblock %}

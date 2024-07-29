@@ -1,8 +1,8 @@
-# customers/views.py
-
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
-from .models import Customer, EmailReference, Technician, Contract, Credential
+from django.utils import timezone
+from datetime import datetime, timedelta
+from .models import Customer, EmailReference, Technician, Contract, Credential, Timesheet
 from .forms import CustomerForm, EmailReferenceForm, ContractForm, TechnicianForm, CredentialForm
 from django.db.models import Q
 from django.contrib import messages
@@ -27,9 +27,12 @@ def customer_create(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             customer = form.save(commit=False)
-            user = User.objects.create_user(username=customer.name, password='default_password')
-            user_profile = UserProfile.objects.create(user=user, is_admin=False)  # Create UserProfile
-            customer.user_profile = user_profile
+            user, created = User.objects.get_or_create(username=customer.name)
+            if created:
+                user.set_password('default_password')
+                user.save()
+            user_profile, profile_created = UserProfile.objects.get_or_create(user=user, defaults={'is_admin': False})
+            customer.user_profile = user  # Assign the User instance to user_profile
             customer.save()
             emails = request.POST.getlist('emails')
             for email in emails:
@@ -73,7 +76,7 @@ def customer_dashboard(request):
     credentials = Credential.objects.filter(username=request.user.username)
     if credentials.exists():
         customer = credentials.first().customer
-        timesheets = customer.timesheet_set.all()  # Assuming related name is 'timesheet_set'
+        timesheets = customer.customer_timesheets.all()  # Assuming related name is 'customer_timesheets'
         return render(request, 'customers/customer_dashboard.html', {'customer': customer, 'timesheets': timesheets})
     else:
         messages.error(request, "No customer information found.")
@@ -114,6 +117,14 @@ def contract_delete(request, customer_id, pk):
         contract.delete()
         return redirect('customers:contract_list', customer_id=customer_id)
     return render(request, 'customers/contract_confirm_delete.html', {'contract': contract, 'customer_id': customer_id})
+
+def contract_approve(request, customer_id, pk):
+    contract = get_object_or_404(Contract, pk=pk, customer_id=customer_id)
+    if request.method == 'POST':
+        contract.approved = True
+        contract.save()
+        messages.success(request, 'Contract approved successfully.')
+    return redirect('customers:contract_list', customer_id=contract.customer.id)
 
 def credential_list(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
@@ -188,3 +199,50 @@ def update_renewal_status(request, customer_id):
         customer.renewal_paid = not customer.renewal_paid
         customer.save()
     return redirect('customers:reports')
+
+def delete_timesheets_older_than_6_months(request):
+    six_months_ago = timezone.now() - timedelta(days=182)  # Approximate 6 months
+    timesheets_to_delete = Timesheet.objects.filter(date__lt=six_months_ago)
+    
+    timesheets_deleted, _ = timesheets_to_delete.delete()
+    
+    messages.success(request, f"Deleted {timesheets_deleted} timesheets older than 6 months.")
+    return redirect('customers:squash')
+
+def delete_timesheets_of_inactive_customers(request):
+    timesheets_to_delete = Timesheet.objects.filter(customer__status='Inactive')
+    
+    timesheets_deleted, _ = timesheets_to_delete.delete()
+    
+    messages.success(request, f"Deleted {timesheets_deleted} timesheets of inactive customers.")
+    return redirect('customers:squash')
+
+def delete_timesheets_in_range(request):
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        if start_date and end_date:
+            timesheets_to_delete = Timesheet.objects.filter(date__range=[start_date, end_date])
+            
+            timesheets_deleted, _ = timesheets_to_delete.delete()
+            
+            messages.success(request, f"Deleted {timesheets_deleted} timesheets in the specified range.")
+        else:
+            messages.error(request, "Please provide both start and end dates.")
+    return redirect('customers:squash')
+
+def delete_timesheets_older_than_date(request):
+    if request.method == 'POST':
+        specific_date = request.POST.get('specific_date')
+        if specific_date:
+            timesheets_to_delete = Timesheet.objects.filter(date__lt=specific_date)
+            
+            timesheets_deleted, _ = timesheets_to_delete.delete()
+            
+            messages.success(request, f"Deleted {timesheets_deleted} timesheets older than the specified date.")
+        else:
+            messages.error(request, "Please provide a specific date.")
+    return redirect('customers:squash')
+
+def squash(request):
+    return render(request, 'customers/squash.html')

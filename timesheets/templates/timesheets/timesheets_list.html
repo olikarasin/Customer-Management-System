@@ -35,6 +35,8 @@
         <th>Date</th>
         <th>Time In</th>
         <th>Time Out</th>
+        <th>Pause Hours</th>
+        <th>Pause Minutes</th>
         <th>Technician Level</th>
         <th>Technician</th>
         <th>Total Time Used</th>
@@ -58,6 +60,8 @@
         <td>{{ timesheet.date }}</td>
         <td>{{ timesheet.time_in }}</td>
         <td>{{ timesheet.time_out }}</td>
+        <td>{{ timesheet.pause_hours }}</td>
+        <td>{{ timesheet.pause_minutes }}</td>
         <td>{{ timesheet.get_technician_level_display }}</td>
         <td>{{ timesheet.technician.name }}</td>
         <td>{{ timesheet.total_time_used }}</td>

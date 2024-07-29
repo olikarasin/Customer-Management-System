@@ -7,6 +7,7 @@
     <meta charset="utf-8">
     <title>Ace Technology Inc.</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header>
@@ -20,6 +21,7 @@
                 <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
                 <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>
                 <li><a class="button" href="{% url 'customers:reports' %}">Reports</a></li>
+                <li><a class="button" href="{% url 'customers:squash' %}">Squash</a></li>
                 <li>
                     <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
                         {% csrf_token %}
@@ -40,5 +42,6 @@
     <footer>
         <p>&copy; 2024 Ace Technology Inc.</p>
     </footer>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

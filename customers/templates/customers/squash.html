@@ -1,0 +1,40 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Squash Timesheets</h2>
+<button class="button" onclick="confirmAction('{% url 'customers:delete_timesheets_older_than_6_months' %}', 'Are you sure you want to delete all timesheets older than 6 months?')">Delete Timesheets Older Than 6 Months</button>
+<button class="button" onclick="confirmAction('{% url 'customers:delete_timesheets_of_inactive_customers' %}', 'Are you sure you want to delete all timesheets of inactive customers?')">Delete Timesheets of Inactive Customers</button>
+
+<form method="post" action="{% url 'customers:delete_timesheets_in_range' %}" onsubmit="return confirm('Are you sure you want to delete all timesheets in the specified date range?');">
+    {% csrf_token %}
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" required>
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date" required>
+    <button type="submit" class="button">Delete Timesheets in Range</button>
+</form>
+
+<form method="post" action="{% url 'customers:delete_timesheets_older_than_date' %}" onsubmit="return confirm('Are you sure you want to delete all timesheets older than the specified date?');">
+    {% csrf_token %}
+    <label for="specific_date">Specific Date:</label>
+    <input type="date" id="specific_date" name="specific_date" required>
+    <button type="submit" class="button">Delete Timesheets Older Than Date</button>
+</form>
+
+<script>
+function confirmAction(url, message) {
+    if (confirm(message)) {
+        window.location.href = url;
+    }
+}
+</script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+    alert('{{ message }}');
+    {% endfor %}
+</script>
+{% endif %}
+{% endblock %}

@@ -5,13 +5,23 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="button">Save</button>
-    <a href="{% url 'timesheets:list' customer.id %}" class="button">Cancel</a>
+    {% if confirm_no_file %}
+        <div class="alert alert-warning">
+            <p>No file uploaded. Please confirm if no file is needed.</p>
+            <button type="submit" name="confirm_no_file" value="true">Confirm No File</button>
+        </div>
+    {% endif %}
+    <button type="submit" class="button">Create Timesheet</button>
 </form>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert {{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+{% if form.errors %}
+    <div class="form-errors">
+        <h3>Form Errors:</h3>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endif %}
 {% endblock %}

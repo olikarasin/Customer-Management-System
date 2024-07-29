@@ -77,6 +77,25 @@ button:hover, .button:hover, input[type="submit"]:hover, nav a:hover {
     color: white !important; /* Ensure text remains white on hover */
 }
 
+/* Style clickable links as buttons */
+a.button-link {
+    background-color: #004a80;
+    color: white !important; /* Ensure text is white */
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    width: 150px; /* Set a fixed width for consistency */
+    text-align: center; /* Center text inside buttons */
+}
+
+a.button-link:hover {
+    background-color: #003366;
+    color: white !important; /* Ensure text remains white on hover */
+}
+
 .container, .form-container, .search-section, .files-display {
     background-color: white;
     color: #333;
@@ -147,4 +166,10 @@ footer {
     nav li {
         margin-bottom: 10px;
     }
+}
+
+.timesheet-id-input {
+    width: 100%;
+    max-width: 300px; /* Adjust the max-width to fit your layout */
+    box-sizing: border-box; /* Ensure padding is included in the width */
 }

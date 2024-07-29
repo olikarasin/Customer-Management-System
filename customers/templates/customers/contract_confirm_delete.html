@@ -1,11 +1,11 @@
 {% extends 'base_layout.html' %}
 
 {% block content %}
-<h2>Delete Contract for {{ customer.name }}</h2>
+<h2>Delete Contract for {{ contract.customer.name }}</h2>
 <p>Are you sure you want to delete this contract?</p>
 <form method="post">
     {% csrf_token %}
     <button type="submit" class="button">Yes, delete</button>
-    <a href="{% url 'customers:contract_list' customer.id %}" class="button">No, go back</a>
+    <a href="{% url 'customers:contract_list' customer_id %}" class="button">No, go back</a>
 </form>
 {% endblock %}

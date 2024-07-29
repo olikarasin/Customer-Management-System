@@ -1,4 +1,3 @@
-# timesheets/models.py
 from decimal import Decimal, ROUND_UP
 from django.utils.timezone import make_aware
 from datetime import datetime, time, timedelta
@@ -11,8 +10,12 @@ def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double
     evening_start = time(17, 0)  # 5 PM
     night_end = time(8, 0)  # Next day 8 AM
 
-    datetime_in = make_aware(datetime.combine(timesheet.date, timesheet.time_in))
-    datetime_out = make_aware(datetime.combine(timesheet.date, timesheet.time_out))
+    work_date = datetime.strptime(timesheet.date, '%Y/%m/%d').date()
+    time_in = datetime.strptime(timesheet.time_in, '%H:%M').time()
+    time_out = datetime.strptime(timesheet.time_out, '%H:%M').time()
+
+    datetime_in = make_aware(datetime.combine(work_date, time_in))
+    datetime_out = make_aware(datetime.combine(work_date, time_out))
 
     total_charge = Decimal(0)
     total_time_used = Decimal(0)
@@ -20,7 +23,7 @@ def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double
 
     # Check if the date is a holiday in Quebec
     quebec_holidays = holidays.CA(prov='QC')
-    is_holiday = timesheet.date in quebec_holidays
+    is_holiday = work_date in quebec_holidays
 
     while current_time < datetime_out:
         if current_time.time() < day_start:
@@ -71,8 +74,10 @@ def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double
         current_time = next_time_boundary
 
     # Subtract the pause duration
-    pause_hours, pause_minutes = map(int, timesheet.pause.split('h'))
-    pause_duration = Decimal(pause_hours + pause_minutes / 60)
+    pause_duration = Decimal(0)
+    if timesheet.pause_hours is not None and timesheet.pause_minutes is not None:
+        pause_duration = Decimal(timesheet.pause_hours + timesheet.pause_minutes / 60)
+
     total_charge -= regular_rate * pause_duration  # Subtract pause duration charge
     total_time_used -= pause_duration
 
@@ -81,18 +86,22 @@ def calculate_total_charge(timesheet, regular_rate, time_and_a_half_rate, double
 class Timesheet(models.Model):
     customer = models.ForeignKey(Customer, related_name='timesheets', on_delete=models.CASCADE)
     timesheet_id = models.CharField(max_length=100)
-    date = models.DateField()
-    time_in = models.TimeField()
-    time_out = models.TimeField()
+    date = models.CharField(max_length=10)  # Change date to a char field for YYYY/MM/DD
+    time_in = models.CharField(max_length=5)  # Change to char field for 24-hour time input
+    time_out = models.CharField(max_length=5)  # Change to char field for 24-hour time input
     technician_level = models.IntegerField(choices=((1, 'Level 1'), (2, 'Level 2'), (3, 'Level 3')))
     technician = models.ForeignKey(Technician, on_delete=models.CASCADE)
     special_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_charge = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_time_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    pause = models.CharField(max_length=10, default='0h0')  # Add pause field
+    pause_hours = models.IntegerField(blank=True, null=True)
+    pause_minutes = models.IntegerField(blank=True, null=True)
     file = models.FileField(upload_to='timesheets/', blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     approved = models.BooleanField(default=False)  # New field to track approval
+    display_notes_to_customer = models.BooleanField(default=False)  # New field
+    manual_charge_hours = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    manual_charge_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         rate_dict = {
@@ -106,6 +115,11 @@ class Timesheet(models.Model):
             total_charge, total_time_used = calculate_total_charge(self, self.special_rate, self.special_rate * Decimal(1.5), self.special_rate * Decimal(2))
         else:
             total_charge, total_time_used = calculate_total_charge(self, regular_rate, time_and_a_half_rate, double_time_rate)
+
+        # Handle manual charges
+        if self.manual_charge_hours is not None and self.manual_charge_amount is not None:
+            total_charge = self.manual_charge_amount
+            total_time_used = self.manual_charge_hours
 
         self.total_charge = total_charge
         self.total_time_used = total_time_used
