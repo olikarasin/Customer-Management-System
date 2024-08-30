@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
 class Technician(models.Model):
     name = models.CharField(max_length=255)
@@ -77,7 +78,12 @@ class Contract(models.Model):
 class Credential(models.Model):
     customer = models.ForeignKey(Customer, related_name='credentials', on_delete=models.CASCADE)
     username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)  # Plaintext password
+    password = models.CharField(max_length=255)  # Store hashed password
+
+    def save(self, *args, **kwargs):
+        if not self.pk or 'password' in kwargs:
+            self.password = make_password(self.password)  # Hash password
+        super(Credential, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username

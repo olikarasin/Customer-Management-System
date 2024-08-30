@@ -7,7 +7,6 @@ from .forms import CustomerForm, EmailReferenceForm, ContractForm, TechnicianFor
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password  # Import this for password hashing
 from accounts.models import UserProfile  # Import UserProfile
 import random
 import string
@@ -29,22 +28,37 @@ def customer_create(request):
         if form.is_valid():
             customer = form.save(commit=False)
             user, created = User.objects.get_or_create(username=customer.name)
+
+            # Set a default password or use a generated one
+            password = request.POST.get('password', 'default_password')
             if created:
-                password = request.POST.get('password', 'default_password')  # Using provided password or default
-                user.set_password(password)  # Hash the password
+                user.set_password(password)
                 user.save()
+            else:
+                # Ensure password is set if not created
+                password = request.POST.get('password', 'default_password')
+
+            # Check if the User already has a Customer linked
+            if hasattr(user, 'userprofile') and hasattr(user.userprofile, 'customer'):
+                # If the user already has a customer, raise an error or handle it appropriately
+                messages.error(request, "This user is already associated with a customer.")
+                return render(request, 'customers/customer_create.html', {'form': form})
+
+            # Create or get the user profile and assign to customer
             user_profile, profile_created = UserProfile.objects.get_or_create(user=user, defaults={'is_admin': False})
-            customer.user_profile = user_profile  # Correctly link UserProfile
-            customer.save()
             
-            # Create or update Credential with hashed password
+            # Assign the User instance to the customer's user_profile
+            customer.user_profile = user
+            customer.save()
+
+            # Create or update Credential with the password
             credential, cred_created = Credential.objects.get_or_create(
-                customer=customer, 
-                username=user.username, 
+                customer=customer,
+                username=user.username,
                 defaults={'password': password}
             )
             if not cred_created:
-                credential.password = password  # Update password if credential exists
+                credential.password = password
                 credential.save()
 
             emails = request.POST.getlist('emails')
@@ -151,6 +165,7 @@ def credential_create(request, customer_id):
         if form.is_valid():
             credential = form.save(commit=False)
             credential.customer = customer
+            credential.password = request.POST.get('password', 'default_password')  # No hashing
             credential.save()
             return redirect('customers:credential_list', customer_id=customer.id)
     else:
@@ -163,6 +178,8 @@ def credential_edit(request, customer_id, pk):
         form = CredentialForm(request.POST, instance=credential)
         if form.is_valid():
             credential = form.save(commit=False)
+            if 'password' in form.changed_data:
+                credential.password = request.POST.get('password')  # No hashing
             credential.save()
             return redirect('customers:credential_list', customer_id=customer_id)
     else:

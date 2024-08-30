@@ -77,7 +77,7 @@ AUTHENTICATION_BACKENDS = [
     'customers.auth_backend.CustomerBackend',
 ]
 
-# Removed password validators
+# Removed password validators for development
 AUTH_PASSWORD_VALIDATORS = []
 
 # Internationalization
