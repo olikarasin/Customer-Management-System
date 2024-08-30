@@ -7,6 +7,7 @@ from .forms import CustomerForm, EmailReferenceForm, ContractForm, TechnicianFor
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password  # Import this for password hashing
 from accounts.models import UserProfile  # Import UserProfile
 import random
 import string
@@ -29,11 +30,23 @@ def customer_create(request):
             customer = form.save(commit=False)
             user, created = User.objects.get_or_create(username=customer.name)
             if created:
-                user.set_password('default_password')
+                password = request.POST.get('password', 'default_password')  # Using provided password or default
+                user.set_password(password)  # Hash the password
                 user.save()
             user_profile, profile_created = UserProfile.objects.get_or_create(user=user, defaults={'is_admin': False})
-            customer.user_profile = user  # Assign the User instance to user_profile
+            customer.user_profile = user_profile  # Correctly link UserProfile
             customer.save()
+            
+            # Create or update Credential with hashed password
+            credential, cred_created = Credential.objects.get_or_create(
+                customer=customer, 
+                username=user.username, 
+                defaults={'password': password}
+            )
+            if not cred_created:
+                credential.password = password  # Update password if credential exists
+                credential.save()
+
             emails = request.POST.getlist('emails')
             for email in emails:
                 if email:

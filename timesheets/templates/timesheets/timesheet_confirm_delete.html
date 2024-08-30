@@ -5,7 +5,7 @@
 <p>Are you sure you want to delete the timesheet "{{ timesheet.timesheet_id }}"?</p>
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Delete</button>
-    <a href="{% url 'timesheets:list' customer_id %}">Cancel</a>
+    <button type="submit" class="button">Delete</button>
+    <a href="{% url 'timesheets:list' customer_id %}" class="button">Cancel</a>
 </form>
 {% endblock %}

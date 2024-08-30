@@ -173,3 +173,18 @@ footer {
     max-width: 300px; /* Adjust the max-width to fit your layout */
     box-sizing: border-box; /* Ensure padding is included in the width */
 }
+
+/*FOR THE DELETE BUTTON ON THE CUSTOMER_LIST.HTML PAGE */
+button.button, 
+.button, 
+input[type="submit"].button {
+    width: 150px;
+    display: inline-block;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #004a80;
+    color: white !important;
+    cursor: pointer;
+}

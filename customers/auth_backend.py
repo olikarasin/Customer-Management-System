@@ -6,9 +6,11 @@ class CustomerBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None):
         try:
             credential = Credential.objects.get(username=username)
-            if password == credential.password:  # Check plaintext password
-                return credential.customer.user_profile  # Update this to user_profile
-        except Credential.DoesNotExist:
+            # Access the related User object via the Customer's user_profile
+            user = credential.customer.user_profile.user
+            if user.check_password(password):  # Use Django's check_password method
+                return user
+        except (Credential.DoesNotExist, AttributeError):
             return None
 
     def get_user(self, user_id):
