@@ -6,14 +6,24 @@ from .models import Customer, EmailReference, Technician, Contract, Credential, 
 from .forms import CustomerForm, EmailReferenceForm, ContractForm, TechnicianForm, CredentialForm
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from accounts.models import UserProfile  # Import UserProfile
+from accounts.models import UserProfile
 import random
 import string
+
+# Helper functions to check user roles
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
+
+def is_customer(user):
+    return user.is_authenticated and not user.is_staff
 
 def main_login(request):
     return render(request, 'accounts/main_login.html')
 
+@login_required
+@user_passes_test(is_admin)
 def customer_list(request):
     query = request.GET.get('q', '')
     if query:
@@ -22,62 +32,53 @@ def customer_list(request):
         customers = Customer.objects.all()
     return render(request, 'customers/customer_list.html', {'customers': customers})
 
+# @login_required
+# @user_passes_test(is_admin)
+# def customer_create(request):
+#     if request.method == 'POST':
+#         form = CustomerForm(request.POST)
+#         if form.is_valid():
+#             customer = form.save()
+#             emails = request.POST.getlist('emails')
+#             for email in emails:
+#                 if email:
+#                     email_ref, created = EmailReference.objects.get_or_create(email=email)
+#                     customer.emails.add(email_ref)
+#             return redirect('customers:list')
+#     else:
+#         form = CustomerForm()
+#     return render(request, 'customers/customer_create.html', {'form': form})
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Customer
+from .forms import CustomerForm
+
 def customer_create(request):
     if request.method == 'POST':
-        form = CustomerForm(request.POST)
+        user_profile = request.user  # Assuming the user is logged in and tied to the profile
+        # Use get_or_create to prevent duplicate customers
+        customer, created = Customer.objects.get_or_create(user_profile=user_profile)
+
+        if not created:
+            # Customer already exists, update it
+            form = CustomerForm(request.POST, instance=customer)
+        else:
+            # New customer
+            form = CustomerForm(request.POST)
+
         if form.is_valid():
-            customer = form.save(commit=False)
-            user, created = User.objects.get_or_create(username=customer.name)
+            form.save()
 
-            # Set a default password or use a generated one
-            password = request.POST.get('password', 'default_password')
-            if created:
-                user.set_password(password)
-                user.save()
-            else:
-                # Ensure password is set if not created
-                password = request.POST.get('password', 'default_password')
+        return redirect('some_view')  # Redirect to an appropriate view after saving
 
-            # Check if the User already has a Customer linked
-            if hasattr(user, 'userprofile') and hasattr(user.userprofile, 'customer'):
-                # If the user already has a customer, raise an error or handle it appropriately
-                messages.error(request, "This user is already associated with a customer.")
-                return render(request, 'customers/customer_create.html', {'form': form})
-
-            # Create or get the user profile and assign to customer
-            user_profile, profile_created = UserProfile.objects.get_or_create(user=user, defaults={'is_admin': False})
-            
-            # Assign the User instance to the customer's user_profile
-            customer.user_profile = user
-            customer.save()
-
-            # Create or update Credential with the password
-            credential, cred_created = Credential.objects.get_or_create(
-                customer=customer,
-                username=user.username,
-                defaults={'password': password}
-            )
-            if not cred_created:
-                credential.password = password
-                credential.save()
-
-            emails = request.POST.getlist('emails')
-            for email in emails:
-                if email:
-                    email_ref, created = EmailReference.objects.get_or_create(email=email)
-                    customer.emails.add(email_ref)
-            return redirect('customers:list')
-    else:
-        form = CustomerForm()
-    return render(request, 'customers/customer_create.html', {'form': form})
-
+@login_required
+@user_passes_test(is_admin)
 def customer_edit(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
         if form.is_valid():
-            customer = form.save(commit=False)
-            customer.save()
+            customer = form.save()
             customer.emails.clear()
             emails = request.POST.getlist('emails')
             for email in emails:
@@ -89,6 +90,8 @@ def customer_edit(request, pk):
         form = CustomerForm(instance=customer)
     return render(request, 'customers/customer_edit.html', {'form': form, 'customer': customer})
 
+@login_required
+@user_passes_test(is_admin)
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     if request.method == 'POST':
@@ -96,24 +99,27 @@ def customer_delete(request, pk):
         return redirect('customers:list')
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
 
-def admin_dashboard(request):
-    return redirect('customers:list')
-
+@login_required
+@user_passes_test(is_customer)
 def customer_dashboard(request):
     credentials = Credential.objects.filter(username=request.user.username)
     if credentials.exists():
         customer = credentials.first().customer
-        timesheets = customer.customer_timesheets.all()  # Assuming related name is 'customer_timesheets'
+        timesheets = customer.customer_timesheets.all()
         return render(request, 'customers/customer_dashboard.html', {'customer': customer, 'timesheets': timesheets})
     else:
         messages.error(request, "No customer information found.")
         return redirect('accounts:login')
 
+@login_required
+@user_passes_test(is_admin)
 def contract_list(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     contracts = Contract.objects.filter(customer=customer)
     return render(request, 'customers/contract_list.html', {'contracts': contracts, 'customer': customer})
 
+@login_required
+@user_passes_test(is_admin)
 def contract_create(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     if request.method == 'POST':
@@ -127,6 +133,8 @@ def contract_create(request, customer_id):
         form = ContractForm()
     return render(request, 'customers/contract_create.html', {'form': form, 'customer': customer})
 
+@login_required
+@user_passes_test(is_admin)
 def contract_edit(request, customer_id, pk):
     contract = get_object_or_404(Contract, pk=pk, customer_id=customer_id)
     if request.method == 'POST':
@@ -138,6 +146,8 @@ def contract_edit(request, customer_id, pk):
         form = ContractForm(instance=contract)
     return render(request, 'customers/contract_edit.html', {'form': form, 'customer_id': customer_id, 'contract': contract})
 
+@login_required
+@user_passes_test(is_admin)
 def contract_delete(request, customer_id, pk):
     contract = get_object_or_404(Contract, pk=pk, customer_id=customer_id)
     if request.method == 'POST':
@@ -145,6 +155,8 @@ def contract_delete(request, customer_id, pk):
         return redirect('customers:contract_list', customer_id=customer_id)
     return render(request, 'customers/contract_confirm_delete.html', {'contract': contract, 'customer_id': customer_id})
 
+@login_required
+@user_passes_test(is_admin)
 def contract_approve(request, customer_id, pk):
     contract = get_object_or_404(Contract, pk=pk, customer_id=customer_id)
     if request.method == 'POST':
@@ -153,15 +165,39 @@ def contract_approve(request, customer_id, pk):
         messages.success(request, 'Contract approved successfully.')
     return redirect('customers:contract_list', customer_id=contract.customer.id)
 
+@login_required
+@user_passes_test(is_admin)
 def credential_list(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     credentials = Credential.objects.filter(customer=customer)
     return render(request, 'customers/credential_list.html', {'credentials': credentials, 'customer': customer})
 
+# @login_required
+# @user_passes_test(is_admin)
+# def credential_create(request, customer_id):
+#     customer = get_object_or_404(Customer, pk=customer_id)
+#     if request.method == 'POST':
+#         form = CredentialForm(request.POST)
+#         if form.is_valid():
+#             credential = form.save(commit=False)
+#             credential.customer = customer
+#             credential.password = request.POST.get('password', 'default_password')  # No hashing
+#             credential.save()
+#             return redirect('customers:credential_list', customer_id=customer.id)
+#     else:
+#         form = CredentialForm()
+#     return render(request, 'customers/credential_create.html', {'form': form, 'customer': customer})
+
+@login_required
+@user_passes_test(is_admin)
 def credential_create(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
+    
+    # Check if a Credential already exists for the Customer
+    credential, created = Credential.objects.get_or_create(customer=customer)
+    
     if request.method == 'POST':
-        form = CredentialForm(request.POST)
+        form = CredentialForm(request.POST, instance=credential)  # Pass the existing credential if it exists
         if form.is_valid():
             credential = form.save(commit=False)
             credential.customer = customer
@@ -169,9 +205,12 @@ def credential_create(request, customer_id):
             credential.save()
             return redirect('customers:credential_list', customer_id=customer.id)
     else:
-        form = CredentialForm()
+        form = CredentialForm(instance=credential)  # Populate the form with the existing credential, if any
+    
     return render(request, 'customers/credential_create.html', {'form': form, 'customer': customer})
 
+@login_required
+@user_passes_test(is_admin)
 def credential_edit(request, customer_id, pk):
     credential = get_object_or_404(Credential, pk=pk, customer_id=customer_id)
     if request.method == 'POST':
@@ -186,6 +225,8 @@ def credential_edit(request, customer_id, pk):
         form = CredentialForm(instance=credential)
     return render(request, 'customers/credential_edit.html', {'form': form, 'customer_id': customer_id, 'credential': credential})
 
+@login_required
+@user_passes_test(is_admin)
 def credential_delete(request, customer_id, pk):
     credential = get_object_or_404(Credential, pk=pk, customer_id=customer_id)
     if request.method == 'POST':
@@ -193,10 +234,14 @@ def credential_delete(request, customer_id, pk):
         return redirect('customers:credential_list', customer_id=customer_id)
     return render(request, 'customers/credential_confirm_delete.html', {'credential': credential, 'customer_id': customer_id})
 
+@login_required
+@user_passes_test(is_admin)
 def technician_list(request):
     technicians = Technician.objects.all()
     return render(request, 'customers/technician_list.html', {'technicians': technicians})
 
+@login_required
+@user_passes_test(is_admin)
 def technician_create(request):
     if request.method == 'POST':
         form = TechnicianForm(request.POST)
@@ -207,6 +252,8 @@ def technician_create(request):
         form = TechnicianForm()
     return render(request, 'customers/technician_create.html', {'form': form})
 
+@login_required
+@user_passes_test(is_admin)
 def technician_delete(request, pk):
     technician = get_object_or_404(Technician, pk=pk)
     if request.method == 'POST':
@@ -219,10 +266,14 @@ def generate_password(request):
     password = ''.join(random.choice(characters) for i in range(10))
     return HttpResponse(password)
 
+@login_required
+@user_passes_test(is_admin)
 def reports(request):
     customers = Customer.objects.filter(status='Active')
     return render(request, 'customers/reports.html', {'customers': customers})
 
+@login_required
+@user_passes_test(is_admin)
 def update_renewal_status(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     if request.method == 'POST':
@@ -230,49 +281,51 @@ def update_renewal_status(request, customer_id):
         customer.save()
     return redirect('customers:reports')
 
+@login_required
+@user_passes_test(is_admin)
 def delete_timesheets_older_than_6_months(request):
-    six_months_ago = timezone.now() - timedelta(days=182)  # Approximate 6 months
+    six_months_ago = timezone.now() - timedelta(days=182)
     timesheets_to_delete = Timesheet.objects.filter(date__lt=six_months_ago)
-    
     timesheets_deleted, _ = timesheets_to_delete.delete()
-    
     messages.success(request, f"Deleted {timesheets_deleted} timesheets older than 6 months.")
     return redirect('customers:squash')
 
+@login_required
+@user_passes_test(is_admin)
 def delete_timesheets_of_inactive_customers(request):
     timesheets_to_delete = Timesheet.objects.filter(customer__status='Inactive')
-    
     timesheets_deleted, _ = timesheets_to_delete.delete()
-    
     messages.success(request, f"Deleted {timesheets_deleted} timesheets of inactive customers.")
     return redirect('customers:squash')
 
+@login_required
+@user_passes_test(is_admin)
 def delete_timesheets_in_range(request):
     if request.method == 'POST':
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         if start_date and end_date:
             timesheets_to_delete = Timesheet.objects.filter(date__range=[start_date, end_date])
-            
             timesheets_deleted, _ = timesheets_to_delete.delete()
-            
             messages.success(request, f"Deleted {timesheets_deleted} timesheets in the specified range.")
         else:
             messages.error(request, "Please provide both start and end dates.")
     return redirect('customers:squash')
 
+@login_required
+@user_passes_test(is_admin)
 def delete_timesheets_older_than_date(request):
     if request.method == 'POST':
         specific_date = request.POST.get('specific_date')
         if specific_date:
             timesheets_to_delete = Timesheet.objects.filter(date__lt=specific_date)
-            
             timesheets_deleted, _ = timesheets_to_delete.delete()
-            
             messages.success(request, f"Deleted {timesheets_deleted} timesheets older than the specified date.")
         else:
             messages.error(request, "Please provide a specific date.")
     return redirect('customers:squash')
 
+@login_required
+@user_passes_test(is_admin)
 def squash(request):
     return render(request, 'customers/squash.html')

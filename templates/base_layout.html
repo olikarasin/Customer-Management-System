@@ -5,32 +5,37 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Ace Technology Inc.</title>
+    <title>Customer Management System</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header>
         <div class="top-left-logo">
-            <a href="{% url 'home' %}"><img src="{% static 'logo.png' %}" alt="AceTechnology" /></a>
         </div>
         <nav>
             <ul>
                 {% if user.is_authenticated %}
-                <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
-                <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
-                <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>
-                <li><a class="button" href="{% url 'customers:reports' %}">Reports</a></li>
-                <li><a class="button" href="{% url 'customers:squash' %}">Squash</a></li>
-                <li>
-                    <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button class="button" type="submit">Logout</button>
-                    </form>
-                </li>
+                    {% if user.is_staff %}
+                        <!-- Admin-specific navigation -->
+                        <li><a class="button" href="{% url 'customers:create' %}">Create Customer</a></li>
+                        <li><a class="button" href="{% url 'customers:list' %}">Customers</a></li>
+                        <li><a class="button" href="{% url 'customers:technician_list' %}">Technicians</a></li>
+                        <li><a class="button" href="{% url 'customers:reports' %}">Reports</a></li>
+                        <li><a class="button" href="{% url 'customers:squash' %}">Squash</a></li>
+                    {% else %}
+                        <!-- Customer-specific navigation -->
+                        <li><a class="button" href="{% url 'customers:customer_dashboard' %}">Dashboard</a></li>
+                    {% endif %}
+                    <li>
+                        <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="button" type="submit">Logout</button>
+                        </form>
+                    </li>
                 {% else %}
-                <li><a class="button" href="{% url 'accounts:admin_login' %}">Sign in as Admin</a></li>
-                <li><a class="button" href="{% url 'accounts:customer_login' %}">Sign in as Customer</a></li>
+                    <li><a class="button" href="{% url 'accounts:admin_login' %}">Sign in as Admin</a></li>
+                    <li><a class="button" href="{% url 'accounts:customer_login' %}">Sign in as Customer</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -40,7 +45,7 @@
         {% endblock %}
     </div>
     <footer>
-        <p>&copy; 2024 Ace Technology Inc.</p>
+        <p>&copy; Designed by Oliver Karasin </p>
     </footer>
     {% block extra_js %}{% endblock %}
 </body>

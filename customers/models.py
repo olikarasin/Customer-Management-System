@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 
 class Technician(models.Model):
     name = models.CharField(max_length=255)
@@ -15,7 +14,7 @@ class EmailReference(models.Model):
         return self.email
 
 class Customer(models.Model):
-    user_profile = models.OneToOneField(User, on_delete=models.CASCADE, default=1)  # Replace 1 with the actual default user ID
+    user_profile = models.OneToOneField(User, on_delete=models.CASCADE, default=1)
     name = models.CharField(max_length=255)
     has_contract = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
@@ -28,7 +27,6 @@ class Customer(models.Model):
     hours_remaining = models.IntegerField(default=0)
     status = models.CharField(max_length=10, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Inactive')
     emails = models.ManyToManyField(EmailReference, blank=True)
-
     tech1_regular_hours = models.IntegerField(default=0)
     tech1_time_and_a_half_hours = models.IntegerField(default=0)
     tech1_double_time_hours = models.IntegerField(default=0)
@@ -49,7 +47,7 @@ class Customer(models.Model):
 
 class Contract(models.Model):
     customer = models.ForeignKey(Customer, related_name='contracts', on_delete=models.CASCADE)
-    date = models.CharField(max_length=8)  # Store date as a char field for YYYYMMDD format
+    date = models.CharField(max_length=8)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     hours = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -65,9 +63,7 @@ class Contract(models.Model):
             self.amount = self.manual_charge_amount
         else:
             self.hours = self.amount / self.rate
-        
         super(Contract, self).save(*args, **kwargs)
-
         if self.approved:
             self.customer.hours_remaining += self.hours
             self.customer.save()
@@ -76,14 +72,9 @@ class Contract(models.Model):
         return f"Contract {self.invoice_number} for {self.customer.name}"
 
 class Credential(models.Model):
-    customer = models.ForeignKey(Customer, related_name='credentials', on_delete=models.CASCADE)
+    customer = models.OneToOneField(Customer, related_name='credential', on_delete=models.CASCADE)
     username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)  # Store hashed password
-
-    def save(self, *args, **kwargs):
-        if not self.pk or 'password' in kwargs:
-            self.password = make_password(self.password)  # Hash password
-        super(Credential, self).save(*args, **kwargs)
+    password = models.CharField(max_length=255)
 
     def __str__(self):
         return self.username
@@ -95,7 +86,7 @@ class Timesheet(models.Model):
     regular_hours = models.DecimalField(max_digits=5, decimal_places=2)
     overtime_hours = models.DecimalField(max_digits=5, decimal_places=2)
     doubletime_hours = models.DecimalField(max_digits=5, decimal_places=2)
-    approved = models.BooleanField(default=False)  # Add this line if timesheets need approval
+    approved = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Timesheet for {self.customer.name} on {self.date}"
