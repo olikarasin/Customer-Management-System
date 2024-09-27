@@ -33,7 +33,7 @@ The system allows users to:
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/your-repo.git
+    git clone https://github.com/olikarasin/Customer-Management-System
     ```
 
 2. Navigate to the project directory:
