@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+db.sqlite3
+*.log
+
+# Virtual environment:
+myvenv/
+venv/
+env/
+
+# Static files:
+staticfiles/
+media/
+
+# Local environment settings:
+.env
+
+# Ignore migration files
+*/migrations/*
+
+# macOS specific
+.DS_Store
+
+# Visual Studio Code
+.vscode/
